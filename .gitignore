@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 🔑 Variabel Lingkungan Rahasia (Tambahkan bagian ini)
+.env
+.env.*

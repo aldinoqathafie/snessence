@@ -19,23 +19,7 @@ import {
     LayoutDashboard,
 } from "lucide-react";
 
-// Hapus semua impor Firebase SDK:
-// import { initializeApp } from 'firebase/app';
-// import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
-// import { 
-//     getFirestore, 
-//     collection, 
-//     query, 
-//     onSnapshot, 
-//     doc, 
-//     addDoc, 
-//     updateDoc, 
-//     deleteDoc, 
-//     serverTimestamp 
-// } from 'firebase/firestore';
-
-
-// --- KOMPONEN PLACEHOLDER (Menggantikan fail luar yang tidak dapat diselesaikan) ---
+// --- KOMPONEN PLACEHOLDER (Sama seperti yang Anda kirimkan) ---
 const PlaceholderComponent = ({ title, description }) => (
     <div className="bg-white p-6 rounded-xl shadow-xl border-l-4 border-yellow-400">
         <h3 className="text-2xl font-bold mb-2 text-gray-800">{title}</h3>
@@ -51,7 +35,6 @@ const LaporanKeuangan = () => <PlaceholderComponent title="Laporan Keuangan" des
 const LaporanInventaris = () => <PlaceholderComponent title="Laporan Inventaris" description="Ringkasan nilai dan kuantiti inventori." />;
 const ProdukTerlaris = () => <PlaceholderComponent title="Produk Terlaris" description="Daftar produk dengan penjualan tertinggi." />;
 const StokKritis = () => <PlaceholderComponent title="Stok Kritis" description="Senarai produk yang hampir kehabisan stok." />;
-const TambahProduk = () => <PlaceholderComponent title="Tambah Produk" description="Formulir penambahan produk (Dikelola oleh modal utama)." />;
 const RencanaPesanan = () => <PlaceholderComponent title="Rencana Pesanan" description="Perancangan pesanan di masa hadapan." />;
 const PesananBaru = () => <PlaceholderComponent title="Pesanan Baru" description="Senarai pesanan yang perlu diproses segera." />;
 const ProsesPesanan = () => <PlaceholderComponent title="Proses Pesanan" description="Pesanan yang sedang dalam proses pengiriman." />;
@@ -63,9 +46,8 @@ const PengaturanPembayaran = () => <PlaceholderComponent title="Pembayaran" desc
 const Integrasi = () => <PlaceholderComponent title="Integrasi Pihak Ketiga" description="Pengaturan untuk perkhidmatan luaran seperti logistik/API." />;
 
 
-// === DEFINISI STRUKTUR MENU LENGKAP ===
+// === DEFINISI STRUKTUR MENU LENGKAP === (Sama seperti yang Anda kirimkan)
 const menuStructure = [
-    // ... (Struktur menu sama seperti sebelumnya)
     {
       key: 'dashboard',
       label: 'Dashboard',
@@ -124,53 +106,40 @@ const menuStructure = [
     },
 ];
 
-
-// ** SIMULASI FUNGSI REDIS CLIENT (Di dunia nyata, ini akan menjadi PANGGILAN API) **
-// Kunci Redis akan distrukturkan seperti 'products:userId'
-const getRedisKey = (userId) => {
-    // Gunakan global variable yang sama, tetapi lebih fokus ke userId
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    return `products:${appId}:${userId}`;
-};
-
-// Mengambil data produk dari 'Redis' (simulasi menggunakan localStorage)
-const fetchProducts = (userId) => {
-    if (!userId) return [];
-    const key = getRedisKey(userId);
-    try {
-        const storedData = localStorage.getItem(key);
-        return storedData ? JSON.parse(storedData) : [];
-    } catch (e) {
-        console.error("Error fetching from simulated Redis (localStorage):", e);
-        return [];
-    }
-};
-
-// Menyimpan data produk ke 'Redis' (simulasi menggunakan localStorage)
-const saveProducts = (userId, products) => {
-    if (!userId) return;
-    const key = getRedisKey(userId);
-    try {
-        localStorage.setItem(key, JSON.stringify(products));
-    } catch (e) {
-        console.error("Error saving to simulated Redis (localStorage):", e);
-    }
-};
-
-// Fungsi untuk mendapatkan ID unik baru (mirip doc.id di Firestore)
+// Fungsi untuk mendapatkan ID unik baru
 const generateUniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
-// ********************************************************************************
 
 
-// === KOMPONEN UTAMA AdminDashboard (Dinamakan semula kepada App) ===
+// ********** FUNGSI INTERAKSI API REDIS AMAN **********
+// Membaca semua produk dari Serverless Function
+const fetchProductsFromApi = async () => {
+    // Memanggil Serverless Function /api/products
+    const res = await fetch('/api/products'); 
+    if (!res.ok) throw new Error('Gagal mengambil data dari API.');
+    return res.json();
+};
+
+// Menyimpan semua produk ke Serverless Function
+const saveProductsToApi = async (products) => {
+    const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products }), // Mengirim seluruh array produk
+    });
+    if (!res.ok) throw new Error('Gagal menyimpan data ke API.');
+    return res.json();
+};
+// *****************************************************
+
+
+// === KOMPONEN UTAMA AdminDashboard ===
 export default function App() {
     // State Navigasi
     const [activeView, setActiveView] = useState({ main: 'products', sub: 'kelola' }); 
 
     // State Autentikasi/Simulasi
-    // Menghapus state db dan auth
     const [userId, setUserId] = useState(null);
-    const [isAuthReady, setIsAuthReady] = useState(false); // Tetap dipertahankan untuk memuatkan
+    const [isAuthReady, setIsAuthReady] = useState(false); 
 
     // State Data & UI
     const [products, setProducts] = useState([]);
@@ -184,11 +153,10 @@ export default function App() {
     const [confirmId, setConfirmId] = useState(null); 
 
 
-    // --- INISIALISASI & AUTENTIKASI SIMULASI (Menggantikan Firebase) ---
-    // Di aplikasi Redis Vercel sebenarnya, Anda mungkin akan menggunakan session/cookie untuk userId
+    // --- INISIALISASI & AUTENTIKASI SIMULASI ---
+    // Dipertahankan agar komponen Admin dapat memuat
     useEffect(() => {
         try {
-            // SIMULASI AUTENTIKASI: Buat ID anonim sebagai ID pengguna untuk Redis Key
             const existingUserId = localStorage.getItem('sn_essence_userId');
             if (existingUserId) {
                 setUserId(existingUserId);
@@ -198,35 +166,35 @@ export default function App() {
                 localStorage.setItem('sn_essence_userId', newUserId);
             }
             setIsAuthReady(true);
-            
         } catch(error) {
             console.error("Simulated Auth Failed:", error);
-            setIsAuthReady(true); // Tetap set ke true agar UI tidak stuck
+            setIsAuthReady(true);
         }
     }, []);
 
-    // --- DATA FETCHING (Redis/Simulasi) ---
-    const loadProducts = useCallback(() => {
-        if (!userId) return;
+    // --- DATA FETCHING (Mengambil dari Server Redis via API) ---
+    const loadProducts = useCallback(async () => {
+        if (!isAuthReady) return;
         
-        // Dalam aplikasi nyata, ini adalah PANGGILAN API untuk GET key: `products:appId:userId` dari Redis
-        const productList = fetchProducts(userId); 
-        setProducts(productList.sort((a, b) => (a.name || "").localeCompare(b.name || "")));
-        
-        // Catatan: Redis TIDAK memiliki listener real-time seperti onSnapshot.
-        // Anda perlu mengimplementasikan polling (pembaruan berkala) atau WebSockets
-        // jika Anda membutuhkan pembaruan real-time dalam arsitektur Redis.
-    }, [userId]);
+        try {
+            console.log("🔄 Memuat Ulang Data Produk dari Server Redis...");
+            const productList = await fetchProductsFromApi(); 
+            setProducts(productList.sort((a, b) => (a.name || "").localeCompare(b.name || "")));
+        } catch (error) {
+            console.error(error);
+            handleShowNotification("Gagal terhubung ke Server API.", "error");
+        }
+    }, [isAuthReady]);
 
     useEffect(() => {
-        if (userId) {
+        if (isAuthReady) {
             loadProducts();
             
-            // SIMULASI POLLING: Memuat ulang data setiap 10 detik (opsional, untuk menyimulasikan "real-time")
+            // Polling: Memuat ulang data setiap 10 detik
             const interval = setInterval(loadProducts, 10000); 
-            return () => clearInterval(interval); // Cleanup interval
+            return () => clearInterval(interval);
         }
-    }, [userId, loadProducts]);
+    }, [isAuthReady, loadProducts]);
 
 
     // --- HANDLER UI & LOGIC ---
@@ -244,16 +212,15 @@ export default function App() {
 
     // Logout Simulasi
     const handleLogout = () => {
-        // Hapus simulasi userId untuk logout
         localStorage.removeItem('sn_essence_userId');
         setUserId(null);
         setProducts([]);
-        handleShowNotification("Admin telah logout! Untuk simulasi, silakan refresh halaman.", "info");
+        handleShowNotification("Admin telah logout! Silakan refresh halaman.", "info");
     };
 
-    // Tambah / Edit produk (Redis/Simulasi)
+    // Tambah / Edit produk (Menulis ke Redis via API)
     const handleSave = async () => {
-        if (!userId) return handleShowNotification("Sila tunggu otentikasi selesai.", "warning");
+        if (!isAuthReady) return handleShowNotification("Sila tunggu otentikasi selesai.", "warning");
 
         if (!formData.name || !formData.price || !formData.stock) {
             handleShowNotification("Lengkapi semua field!", "warning");
@@ -261,74 +228,76 @@ export default function App() {
         }
         
         try {
-            // PANGGILAN API ke server yang menggunakan Redis SET/HSET untuk menyimpan
-            
-            const currentProducts = fetchProducts(userId);
+            // 1. Ambil data terbaru dari Redis
+            let currentProducts = await fetchProductsFromApi();
+
+            const dataToSave = {
+                name: formData.name,
+                price: formData.price,
+                stock: parseInt(formData.stock) || 0,
+                img: formData.img || "",
+                updatedAt: new Date().toISOString()
+            };
 
             if (editingProduct) {
                 // Update produk sedia ada
-                const productIndex = currentProducts.findIndex(p => p.id === editingProduct.id);
-                if (productIndex > -1) {
-                    currentProducts[productIndex] = {
-                        ...editingProduct, // Pertahankan ID asli
-                        name: formData.name,
-                        price: formData.price,
-                        stock: parseInt(formData.stock) || 0,
-                        img: formData.img || "",
-                        updatedAt: new Date().toISOString() // Simulasikan serverTimestamp
-                    };
-                }
+                currentProducts = currentProducts.map(p => 
+                    p.id === editingProduct.id ? { ...p, ...dataToSave } : p
+                );
                 handleShowNotification("Produk diperbarui!", "success");
             } else {
                 // Tambah produk baharu
                 const newProduct = {
-                    id: generateUniqueId(), // ID unik baru
-                    name: formData.name,
-                    price: formData.price,
-                    stock: parseInt(formData.stock) || 0,
-                    img: formData.img || "",
-                    createdAt: new Date().toISOString() // Simulasikan serverTimestamp
+                    id: generateUniqueId(),
+                    ...dataToSave,
+                    createdAt: new Date().toISOString()
                 };
                 currentProducts.push(newProduct);
                 handleShowNotification("Produk ditambahkan!", "success");
             }
             
-            saveProducts(userId, currentProducts); // Simpan ke 'Redis'
+            // 2. Simpan kembali seluruh array ke Redis via API
+            await saveProductsToApi(currentProducts);
             loadProducts(); // Muat ulang data
             setShowModal(false);
 
         } catch (err) {
             console.error("Gagal menyimpan produk:", err);
-            handleShowNotification("Gagal menyimpan produk. Sila cuba lagi.", "error");
+            handleShowNotification("Gagal menyimpan produk. Cek koneksi API/Redis.", "error");
         }
     };
 
-    // Handler Konfirmasi Hapus
+    // Handler Konfirmasi Hapus (Menghapus dari Redis via API)
+    const executeDelete = async (id) => {
+        if (!isAuthReady) return handleShowNotification("Sila tunggu otentikasi selesai.", "warning");
+
+        try {
+            // 1. Ambil data terbaru dari Redis
+            let currentProducts = await fetchProductsFromApi();
+            
+            // 2. Filter produk
+            const updatedProducts = currentProducts.filter(p => p.id !== id);
+
+            if (updatedProducts.length < currentProducts.length) {
+                // 3. Simpan array yang sudah difilter kembali ke Redis via API
+                await saveProductsToApi(updatedProducts);
+                loadProducts(); 
+                handleShowNotification("Produk berhasil dihapus!", "success");
+            } else {
+                handleShowNotification("Produk tidak ditemukan.", "error");
+            }
+
+        } catch (err) {
+            console.error("Gagal menghapus produk:", err);
+            handleShowNotification("Gagal menghapus produk. Cek koneksi API/Redis.", "error");
+        }
+    };
+    
     const confirmDelete = (id) => {
         setConfirmId(id);
-        setConfirmAction(() => async () => {
-            if (!userId) return handleShowNotification("Sila tunggu otentikasi selesai.", "warning");
-            
-            try {
-                // PANGGILAN API ke server yang menggunakan Redis SET/HDEL untuk menghapus
-                let currentProducts = fetchProducts(userId);
-                
-                const productIndex = currentProducts.findIndex(p => p.id === id);
-                if (productIndex > -1) {
-                    currentProducts.splice(productIndex, 1);
-                }
-
-                saveProducts(userId, currentProducts); // Simpan ke 'Redis'
-                loadProducts(); // Muat ulang data
-                
-                handleShowNotification("Produk berhasil dihapus!", "success");
-
-            } catch (err) {
-                console.error("Gagal menghapus produk:", err);
-                handleShowNotification("Gagal menghapus produk. Sila cuba lagi.", "error");
-            }
-            
-            setConfirmAction(null); // Tutup modal konfirmasi
+        setConfirmAction(() => () => {
+            executeDelete(id);
+            setConfirmAction(null); 
             setConfirmId(null);
         });
     };
@@ -358,7 +327,6 @@ export default function App() {
         return (
             <section>
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-3xl font-semibold text-gray-900 hidden">Senarai Produk</h2>
                     <button
                         onClick={() => openModal()}
                         className="flex items-center gap-2 bg-black text-yellow-400 px-4 py-2 rounded-lg shadow-lg hover:bg-gray-800 transition"
@@ -380,7 +348,7 @@ export default function App() {
                         <tbody>
                             {products.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="py-8 text-center text-gray-500">Tiada produk ditemui. Sila tambah yang baharu.</td>
+                                    <td colSpan="4" className="py-8 text-center text-gray-500">Tiada produk ditemui. Cek koneksi API/Redis.</td>
                                 </tr>
                             ) : (
                                 products.map((p) => (
@@ -394,7 +362,6 @@ export default function App() {
                                                     src={p.img} 
                                                     alt={p.name} 
                                                     className="w-10 h-10 object-cover rounded-md"
-                                                    // Fallback untuk gambar
                                                     onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/40x40/f3f4f6/a1a1aa?text=NoImg"; }}
                                                 />
                                             ) : (
@@ -429,7 +396,7 @@ export default function App() {
                         <tfoot>
                             <tr>
                                 <td colSpan="4" className="py-2 px-4 text-xs text-right text-gray-500">
-                                    ID Pengguna: {userId || "Menunggu..."}
+                                    Status Koneksi: Redis via API
                                 </td>
                             </tr>
                         </tfoot>
@@ -440,7 +407,6 @@ export default function App() {
 
     // === ROUTER KONTEN HELPER ===
     const ContentRouter = ({ activeView }) => {
-        // ... (ContentRouter sama seperti sebelumnya)
         switch (activeView.main) {
             case 'dashboard':
                 switch (activeView.sub) {
@@ -480,10 +446,9 @@ export default function App() {
                 break;
         }
         
-        // Fallback jika tidak ada yang cocok
         return (
             <div className="bg-white p-10 rounded-xl shadow-md text-center border-l-4 border-yellow-500">
-                <p className="text-gray-600">Sila pilih sub-menu untuk {activeView.main}.</p>
+                <p className="text-gray-600">Sila pilih sub-menu.</p>
             </div>
         );
     }
@@ -629,7 +594,7 @@ export default function App() {
                 </div>
             )}
 
-            {/* MODAL KONFIRMASI (MENGGANTI window.confirm()) */}
+            {/* MODAL KONFIRMASI */}
             {confirmAction && (
                 <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm relative text-center">
@@ -655,7 +620,7 @@ export default function App() {
                 </div>
             )}
 
-            {/* NOTIFIKASI KUSTOM (MENGGANTI alert()) */}
+            {/* NOTIFIKASI KUSTOM */}
             {notification.show && (
                 <div 
                     className={`fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg text-white font-semibold transition-all duration-300 transform ${
