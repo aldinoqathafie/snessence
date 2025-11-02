@@ -9,8 +9,8 @@ import { Redis } from "@upstash/redis";
 // Variabel yang digunakan diambil dari ENVIRONMENT VARIABLES di Vercel Dashboard.
 // Ini memastikan token Redis Anda TIDAK PERNAH terekspos ke browser (client-side).
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL, 
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  url: process.env.VITE_UPSTASH_REDIS_REST_URL,
+  token: process.env.VITE_UPSTASH_REDIS_REST_TOKEN,
 });
 
 // Kunci tunggal untuk menyimpan semua produk publik
