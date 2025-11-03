@@ -118,8 +118,15 @@ export default function Variants() {
           onMouseMove={(e) => handleMove(e.clientX)}
           onMouseUp={handleEnd}
           onMouseLeave={handleEnd}
-          onTouchStart={(e) => handleStart(e.touches[0].clientX)}
-          onTouchMove={(e) => handleMove(e.touches[0].clientX)}
+          // --- PERBAIKAN: Mencegah default behavior untuk touch events (scrolling halaman) ---
+          onTouchStart={(e) => {
+            e.preventDefault(); // Blokir scroll halaman saat mulai swipe
+            handleStart(e.touches[0].clientX);
+          }}
+          onTouchMove={(e) => {
+            e.preventDefault(); // Blokir scroll halaman saat proses swipe
+            handleMove(e.touches[0].clientX);
+          }}
           onTouchEnd={handleEnd}
         >
           {variants.map((variant, i) => {

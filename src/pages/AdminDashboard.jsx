@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom"; // <-- DITAMBAHKAN
 import {
   LogOut, Package, Users, ShoppingBag, BarChart3, Settings, Plus, X, Edit,
   Trash2, AlertTriangle, CheckCircle, Zap, DollarSign, Truck, Monitor, LayoutDashboard
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext"; // <-- DITAMBAHKAN
 import { db, storage } from "../firebase";
 import {
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy
@@ -65,6 +67,10 @@ const menuStructure = [
 ];
 
 export default function AdminDashboard() {
+  // Panggil useAuth dan useNavigate
+  const { logout } = useAuth(); // <-- HOOK DITAMBAHKAN
+  const navigate = useNavigate(); // <-- HOOK DITAMBAHKAN
+
   const [activeView, setActiveView] = useState({ main: "products", sub: "kelola" });
   const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -184,13 +190,16 @@ export default function AdminDashboard() {
     }
   };
 
+  // FUNGSI LOGOUT YANG DIPERBAIKI
   const handleLogout = () => {
-    // keep existing simulated logout behavior
-    localStorage.removeItem("sn_essence_userId");
-    setProducts([]);
-    handleShowNotification("Admin telah logout! Silakan refresh halaman.", "info");
+    // 1. Panggil fungsi logout dari AuthContext (mereset state dan local storage)
+    logout(); 
+    // 2. Tampilkan notifikasi
+    handleShowNotification("Admin telah logout!", "info");
+    // 3. Navigasi ke rute '/login' secara eksplisit
+    navigate("/login", { replace: true });
   };
-
+  
   const ProductManagementView = () => (
     <section>
       <div className="flex justify-between items-center mb-6">

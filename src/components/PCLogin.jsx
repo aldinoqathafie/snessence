@@ -1,4 +1,7 @@
-import React, { useEffect } from "react";
+// src/components/PCLogin.jsx
+
+// Hapus import useEffect karena tidak digunakan lagi
+import React from "react"; 
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Variants from "./Variants";
@@ -11,14 +14,21 @@ export default function PCLogin() {
   const navigate = useNavigate();
 
   const handleLogin = ({ email, password }) => {
-    login(email, password);
+    // Panggil fungsi login yang sekarang mengembalikan user data atau null
+    const loggedInUser = login(email, password);
+
+    // Lakukan pengalihan HANYA jika login berhasil
+    if (loggedInUser) {
+      if (loggedInUser.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else if (loggedInUser.role === "user") {
+        navigate("/user", { replace: true });
+      }
+    }
   };
 
-  useEffect(() => {
-    if (user?.role === "admin") navigate("/admin", { replace: true });
-    else if (user?.role === "user") navigate("/user", { replace: true });
-  }, [user, navigate]);
-
+  /* BLOK useEffect ASLI DIHAPUS */
+  
   return (
     <div
       className="relative w-full h-screen overflow-hidden bg-cover bg-center"

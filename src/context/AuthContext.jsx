@@ -1,103 +1,81 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import {
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-} from "firebase/auth";
-import { auth } from "../firebase";
+// src/context/AuthContext.jsx
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [role, setRole] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Konfigurasi mode offline / online
-  const MODE_OFFLINE = !navigator.onLine; // otomatis deteksi: offline kalau gak ada internet
-
-  // Data user lokal (untuk mode offline)
-  // *** INI SUDAH DIMODIFIKASI SESUAI PERMINTAAN ANDA ***
-  const localUsers = [
-    { email: "admin@admin.com", password: "123456", role: "admin" }, 
-    { email: "user@user.com", password: "123456", role: "user" },
-  ];
-
-  useEffect(() => {
-    if (MODE_OFFLINE) {
-      // Mode offline tidak butuh listener Firebase
-      setLoading(false);
-      return;
-    }
-
-    // Mode online (pakai Firebase)
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        // Bisa disesuaikan untuk ambil role dari Firestore
-        // Contoh: Jika Anda menggunakan admin@admin.com, set role admin.
-        if (currentUser.email === "admin@admin.com") setRole("admin");
-        else setRole("user");
-      } else {
-        setUser(null);
-        setRole(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const login = async (email, password) => {
-    if (MODE_OFFLINE) {
-      // Login lokal
-      const foundUser = localUsers.find(
-        (u) => u.email === email && u.password === password
-      );
-      if (foundUser) {
-        // Set user dengan minimal properti yang dibutuhkan
-        setUser({ email: foundUser.email, uid: 'local_uid' }); // Tambahkan uid dummy jika perlu
-        setRole(foundUser.role);
-        console.log(`Login Sukses (Mode Offline): ${foundUser.role} - ${foundUser.email}`);
-      } else {
-        // Log error di console agar lebih informatif
-        console.error("Login error:", "Email atau password salah (mode offline)");
-        alert("Login gagal: Email atau password salah (mode offline)");
-      }
-      return;
-    }
-
-    // Login Firebase (online)
+  const getInitialState = (key, defaultValue) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const storedValue = localStorage.getItem(key);
+      return storedValue ? JSON.parse(storedValue) : defaultValue;
     } catch (error) {
-      console.error("Login error:", error);
-      alert("Login gagal: " + error.message);
+      console.error("Error reading localStorage key:", key, error);
+      return defaultValue;
     }
   };
 
-  const logout = async () => {
-    if (MODE_OFFLINE) {
-      setUser(null);
-      setRole(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    getInitialState('isAuthenticated', false)
+  );
+
+  const [user, setUser] = useState(
+    getInitialState('user', null)
+  );
+
+  useEffect(() => {
+    localStorage.setItem('isAuthenticated', JSON.stringify(isAuthenticated));
+    localStorage.setItem('user', JSON.stringify(user));
+  }, [isAuthenticated, user]);
+
+  /**
+   * login sekarang mendukung:
+   *  - Admin:  sn@admin.com / 123456  -> role: 'admin'
+   *  - User :  sn@user.com  / 123456  -> role: 'user'
+   *
+   * Mengembalikan objek user saat sukses, atau null saat gagal.
+   */
+  const login = (email, password) => {
+    // Kredensial valid
+    const creds = [
+      { email: 'sn@admin.com', password: '123456', role: 'admin', name: 'Super Admin' },
+      { email: 'sn@user.com',  password: '123456', role: 'user',  name: 'Regular User' }
+    ];
+
+    const matched = creds.find(c => c.email === email && c.password === password);
+
+    if (matched) {
+      setIsAuthenticated(true);
+      const userData = {
+        email: matched.email,
+        role: matched.role,
+        name: matched.name
+      };
+      setUser(userData);
+      return userData; // kembalikan detail user agar caller bisa navigasi berdasarkan role
     } else {
-      await signOut(auth);
+      alert('Login Gagal: Username atau Password salah!');
+      return null;
     }
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('user');
+  };
+
+  const contextValue = {
+    isAuthenticated,
+    user,
+    login,
+    logout,
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, role, login, logout, loading, MODE_OFFLINE }}
-    >
-      {loading ? (
-        <div style={{ textAlign: "center", padding: "50px" }}>
-          Memuat autentikasi...
-        </div>
-      ) : (
-        children
-      )}
+    <AuthContext.Provider value={contextValue}>
+      {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

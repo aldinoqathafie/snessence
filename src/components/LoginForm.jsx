@@ -1,6 +1,8 @@
+// GANTI SELURUH ISI FILE INI
 import React, { useState } from 'react';
 
-export default function LoginForm({ onSubmit }) {
+// Terima onSubmitGoogle sebagai prop baru
+export default function LoginForm({ onSubmit, onSubmitGoogle }) { 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,6 +20,14 @@ export default function LoginForm({ onSubmit }) {
       onSubmit({ email, password });
     } else {
       console.log('Login attempt:', { email, password });
+    }
+  };
+  
+  // Handler untuk Google Login
+  const handleGoogleLogin = () => {
+    setError('');
+    if (onSubmitGoogle) {
+      onSubmitGoogle();
     }
   };
 
@@ -82,6 +92,30 @@ export default function LoginForm({ onSubmit }) {
             Masuk Sekarang
           </button>
         </form>
+
+        {/* --- TOMBOL LOGIN WITH GOOGLE (Opsi 1) --- */}
+        <div className="flex items-center my-4"> 
+            <div className="flex-grow border-t border-gray-600"></div>
+            <span className="flex-shrink mx-4 text-gray-400 text-sm">ATAU</span>
+            <div className="flex-grow border-t border-gray-600"></div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleLogin} 
+          className="w-full py-2 text-base font-semibold text-white bg-blue-600 
+                     rounded-lg shadow-lg shadow-blue-600/50 hover:bg-blue-500 transition 
+                     duration-300 ease-in-out transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-2"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#FFC107" d="M43.61 20.08H24V28.92H35.15C34.42 32.8 31.64 36.5 24 36.5C18.06 36.5 13.04 31.64 13.04 25.5C13.04 19.36 18.06 14.5 24 14.5C27.59 14.5 30.15 16.09 31.75 17.65L38.64 10.95C34.61 7.29 29.83 5 24 5C11.85 5 2.5 14.35 2.5 25.5C2.5 36.65 11.85 46 24 46C35.8 46 44.5 37.89 44.5 26.5C44.5 24.8 44.34 22.95 43.61 21.32V20.08Z" clipRule="evenodd"/>
+              <path fill="#FF3D00" d="M6 25.5C6 27.67 6.4 29.74 7.2 31.62L16.29 25.5L7.2 19.38C6.4 21.26 6 23.33 6 25.5Z" clipRule="evenodd"/>
+              <path fill="#4CAF50" d="M24 46C15.8 46 8.71 42.6 3.63 37.16L12.72 31.04C15.02 33.72 19.37 36.5 24 36.5C31.64 36.5 34.42 32.8 35.15 28.92L44.24 35.04C39.16 40.48 31.87 46 24 46Z" clipRule="evenodd"/>
+              <path fill="#1976D2" d="M43.61 20.08H24V28.92H35.15C34.42 32.8 31.64 36.5 24 36.5C18.06 36.5 13.04 31.64 13.04 25.5C13.04 19.36 18.06 14.5 24 14.5C27.59 14.5 30.15 16.09 31.75 17.65L38.64 10.95C34.61 7.29 29.83 5 24 5C11.85 5 2.5 14.35 2.5 25.5C2.5 36.65 11.85 46 24 46C35.8 46 44.5 37.89 44.5 26.5C44.5 24.8 44.34 22.95 43.61 21.32V20.08Z" clipRule="evenodd"/>
+          </svg>
+          Google Login
+        </button>
+        {/* AKHIR TOMBOL GOOGLE */}
 
         <div className="mt-6 text-center text-sm text-white">
           <a href="#" className="font-medium text-yellow-500 hover:text-yellow-400 transition">

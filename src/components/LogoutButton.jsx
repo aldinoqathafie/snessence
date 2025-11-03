@@ -1,15 +1,22 @@
-import React from "react";
-import { useAuth } from "../context/AuthContext";
+// src/components/LogoutButton.jsx
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-export default function LogoutButton() {
+const LogoutButton = () => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout(); // reset state user
+    navigate('/login', { replace: true }); // langsung arahkan ke Login.jsx
+  };
 
   return (
-    <button
-      onClick={logout}
-      className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-semibold transition"
-    >
-      Logout
+    <button onClick={handleLogout}>
+      Keluar (Logout) 🚪
     </button>
   );
-}
+};
+
+export default LogoutButton;

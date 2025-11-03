@@ -1,4 +1,7 @@
-import React, { useEffect } from "react";
+// src/components/MobileLogin.jsx - PERBAIKAN LENGKAP
+
+// Hapus import useEffect karena tidak digunakan lagi
+import React from "react"; 
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import bg from "../assets/background.jpg";
@@ -10,17 +13,25 @@ export default function MobileLogin() {
   const navigate = useNavigate();
 
   const handleLogin = ({ email, password }) => {
-    login(email, password);
+    // Panggil fungsi login yang sekarang mengembalikan user data atau null
+    const loggedInUser = login(email, password);
+
+    // Lakukan pengalihan HANYA jika login berhasil
+    if (loggedInUser) {
+      if (loggedInUser.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else if (loggedInUser.role === "user") {
+        navigate("/user", { replace: true });
+      }
+    }
   };
 
-  useEffect(() => {
-    if (user?.role === "admin") navigate("/admin", { replace: true });
-    else if (user?.role === "user") navigate("/user", { replace: true });
-  }, [user, navigate]);
-
+  /* BLOK useEffect ASLI DIHAPUS */
+  
   return (
+    // TAMBAH: overflow-hidden untuk mencegah scroll halaman utama
     <div
-      className="relative flex flex-col items-center min-h-screen px-4 py-6 text-white"
+      className="relative flex flex-col items-center overflow-hidden min-h-screen px-4 py-6 text-white"
       style={{
         backgroundImage: `url(${bg})`,
         backgroundSize: "cover",
@@ -53,10 +64,11 @@ export default function MobileLogin() {
         <LoginForm onSubmit={handleLogin} />
       </div>
 
-      {/* Variants di bagian paling bawah, menggunakan absolute positioning */}
-      <div className="absolute bottom-24 w-30 max-w-md px-2 sm:px-4 pb-4 flex justify-center">
-        <Variants />
-      </div>
-    </div>
+      {/* Variants di bagian paling bawah */}
+      {/* overscroll-x-contain tidak diperlukan lagi di sini jika kita sudah menggunakan preventDefault di Variants.jsx */}
+      <div className="absolute bottom-24 w-30 max-w-md px-2 sm:px-4 pb-4 flex justify-center">
+        <Variants />
+      </div>
+    </div>
   );
 }
