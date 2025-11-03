@@ -1,10 +1,16 @@
 // src/firebase.js
+
+// Import modul Firebase yang dibutuhkan
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage"; // ✅ Tambahkan ini
+import { getStorage } from "firebase/storage";
 
-// Konfigurasi Firebase
+// =======================
+// 🔧 Konfigurasi Firebase
+// =======================
+// Pastikan semua variabel ini sudah ada di file .env
+// dengan prefix VITE_ agar bisa diakses oleh Vite.
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -14,13 +20,19 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Inisialisasi Firebase
+// =======================
+// 🚀 Inisialisasi Firebase
+// =======================
 const app = initializeApp(firebaseConfig);
 
-// Instance modul
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app); // ✅ Tambahkan ini
+// =======================
+// 📦 Modul Firebase
+// =======================
+const auth = getAuth(app);        // 🔐 Modul autentikasi (login, register, dll)
+const db = getFirestore(app);     // 💾 Firestore database
+const storage = getStorage(app);  // 🗂️ Storage (upload file/gambar)
 
-// Ekspor semua
+// =======================
+// 📤 Ekspor instance
+// =======================
 export { app, auth, db, storage };

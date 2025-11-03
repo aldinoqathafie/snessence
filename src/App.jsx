@@ -1,12 +1,15 @@
 // src/App.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+// Import Components
 import MobileLogin from "./components/MobileLogin";
 import PCLogin from "./components/PCLogin";
 import Login from "./components/Login"; // deteksi otomatis
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
+// Import Contexts
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext"; // <-- BARU DITAMBAHKAN
 
 // Komponen pembungkus untuk proteksi route
 const ProtectedRoute = ({ children }) => {
@@ -16,39 +19,43 @@ const ProtectedRoute = ({ children }) => {
 
 export default function App() {
   return (
+    // 1. AuthProvider (dibutuhkan untuk login)
     <AuthProvider>
-      <Routes>
-        {/* Halaman awal langsung login otomatis */}
-        <Route path="/" element={<Login />} />
+      {/* 2. CartProvider (DITAMBAHKAN: dibutuhkan oleh useCart di UserDashboard) */}
+      <CartProvider> 
+        <Routes>
+          {/* Halaman awal langsung login otomatis */}
+          <Route path="/" element={<Login />} />
 
-        {/* Manual akses login juga pakai deteksi otomatis */}
-        <Route path="/login" element={<Login />} />
+          {/* Manual akses login juga pakai deteksi otomatis */}
+          <Route path="/login" element={<Login />} />
 
-        {/* Login khusus perangkat */}
-        <Route path="/MobileLogin" element={<MobileLogin />} />
-        <Route path="/PCLogin" element={<PCLogin />} />
+          {/* Login khusus perangkat */}
+          <Route path="/MobileLogin" element={<MobileLogin />} />
+          <Route path="/PCLogin" element={<PCLogin />} />
 
-        {/* Dashboard admin & user hanya bisa diakses jika login */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/user"
-          element={
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* Dashboard admin & user hanya bisa diakses jika login */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user"
+            element={
+              <ProtectedRoute>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Redirect fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Redirect fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </CartProvider>
     </AuthProvider>
   );
 }

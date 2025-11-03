@@ -1,15 +1,20 @@
+// src/pages/AdminDashboard.jsx
+
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom"; // <-- DITAMBAHKAN
+import { useNavigate } from "react-router-dom"; 
 import {
   LogOut, Package, Users, ShoppingBag, BarChart3, Settings, Plus, X, Edit,
   Trash2, AlertTriangle, CheckCircle, Zap, DollarSign, Truck, Monitor, LayoutDashboard
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext"; // <-- DITAMBAHKAN
+import { useAuth } from "../context/AuthContext"; 
 import { db, storage } from "../firebase";
 import {
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+// 🟢 IMPORT KOMPONEN PENGATURAN PEMBAYARAN NYATA
+import PengaturanPembayaran from "./pengaturan/PengaturanPembayaran"; 
 
 // Placeholder components (kept from original)
 const PlaceholderComponent = ({ title, description }) => (
@@ -21,6 +26,8 @@ const PlaceholderComponent = ({ title, description }) => (
     </div>
   </div>
 );
+
+// PLACEHOLDER LAINNYA (TETAP SAMA)
 const GrafikPenjualan = () => <PlaceholderComponent title="Grafik Penjualan" description="Analisis visual data penjualan." />;
 const LaporanPenjualan = () => <PlaceholderComponent title="Laporan Penjualan" description="Ringkasan transaksi dan hasil jualan." />;
 const LaporanKeuangan = () => <PlaceholderComponent title="Laporan Keuangan" description="Status kewangan dan aliran tunai." />;
@@ -34,8 +41,9 @@ const LacakPesanan = () => <PlaceholderComponent title="Lacak Pesanan" descripti
 const ManajemenUser = () => <PlaceholderComponent title="Manajemen Pengguna" description="Mengelola akses dan peranan pengguna admin/staf." />;
 const LaporanKinerja = () => <PlaceholderComponent title="Laporan Kinerja" description="Evaluasi prestasi kerja pengguna." />;
 const PengaturanToko = () => <PlaceholderComponent title="Pengaturan Toko" description="Mengkonfigurasi maklumat dan operasi kedai." />;
-const PengaturanPembayaran = () => <PlaceholderComponent title="Pembayaran" description="Mengurus kaedah pembayaran dan integrasi." />;
+// CATATAN: Placeholder untuk PengaturanPembayaran DIHAPUS karena sudah di-import di atas.
 const Integrasi = () => <PlaceholderComponent title="Integrasi Pihak Ketiga" description="Pengaturan untuk perkhidmatan luaran seperti logistik/API." />;
+
 
 const menuStructure = [
   { key: "dashboard", label: "Dashboard", icon: <BarChart3 />, defaultSub: "ringkasan", subMenus: [
@@ -61,15 +69,15 @@ const menuStructure = [
   ]},
   { key: "settings", label: "Pengaturan", icon: <Settings />, defaultSub: "toko", subMenus: [
     { key: "toko", label: "Pengaturan Toko", icon: <Settings /> },
-    { key: "pembayaran", label: "Pembayaran", icon: <DollarSign /> },
+    { key: "pembayaran", label: "Pembayaran", icon: <DollarSign /> }, // Key ini akan memuat PengaturanPembayaran.jsx
     { key: "integrasi", label: "Integrasi", icon: <CheckCircle /> },
   ]},
 ];
 
 export default function AdminDashboard() {
   // Panggil useAuth dan useNavigate
-  const { logout } = useAuth(); // <-- HOOK DITAMBAHKAN
-  const navigate = useNavigate(); // <-- HOOK DITAMBAHKAN
+  const { logout } = useAuth(); 
+  const navigate = useNavigate(); 
 
   const [activeView, setActiveView] = useState({ main: "products", sub: "kelola" });
   const [products, setProducts] = useState([]);
@@ -294,7 +302,8 @@ export default function AdminDashboard() {
       case 'settings':
         switch (activeView.sub) {
           case 'toko': return <PengaturanToko />;
-          case 'pembayaran': return <PengaturanPembayaran />;
+          // 🟢 KOMPONEN NYATA DIPANGGIL DI SINI
+          case 'pembayaran': return <PengaturanPembayaran />; 
           case 'integrasi': return <Integrasi />;
         }
         break;
